@@ -149,6 +149,7 @@ public class SewerLevel extends RegularLevel {
     protected void createItems() {
         if (Dungeon.depth == 1) {
             int upg = Random.Int(1, 4);
+            boolean cursed = Random.Int(0, 10) > 7;
             // Be marginally nicer on the first floor
             // TODO: Probably way too nice
             Item item = null;
@@ -156,30 +157,37 @@ public class SewerLevel extends RegularLevel {
                 case 0:
                     item = new WandOfDisintegration();
                     item.upgrade(upg);
+                    item.cursed = cursed;
                     break;
                 case 1:
                     item = new RingOfMight();
                     item.upgrade(upg);
+                    item.cursed = cursed;
                     break;
                 case 2:
                     item = new RingOfEvasion();
                     item.upgrade(upg);
+                    item.cursed = cursed;
                     break;
                 case 3:
                     item = new RingOfForce();
                     item.upgrade(upg);
+                    item.cursed = cursed;
                     break;
                 case 4:
                     item = new Whip();
                     item.upgrade(upg);
+                    item.cursed = cursed;
                     break;
                 case 5:
                     item = new EtherealChains();
                     item.upgrade(upg);
+                    item.cursed = cursed;
                     break;
                 case 6:
                     item = new DriedRose();
                     item.upgrade(upg);
+                    item.cursed = cursed;
                     break;
                 case 7:
                     item = new PotionOfMight();
@@ -194,9 +202,6 @@ public class SewerLevel extends RegularLevel {
                     break;
             }
             addItemToSpawn(item);
-            Ring ring = new RingOfSearching();
-            ring.upgrade(10);
-            addItemToSpawn(ring);
         }
         if (!Dungeon.limitedDrops.dewVial.dropped() && Random.Int(4 - Dungeon.depth) == 0) {
             addItemToSpawn(new DewVial());
