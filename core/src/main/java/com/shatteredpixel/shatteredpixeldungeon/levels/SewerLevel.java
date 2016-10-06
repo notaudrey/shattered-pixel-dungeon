@@ -26,14 +26,18 @@ import com.shatteredpixel.shatteredpixeldungeon.DungeonTilemap;
 import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.npcs.Ghost;
 import com.shatteredpixel.shatteredpixeldungeon.effects.Ripple;
 import com.shatteredpixel.shatteredpixeldungeon.items.DewVial;
-import com.shatteredpixel.shatteredpixeldungeon.levels.traps.AlarmTrap;
-import com.shatteredpixel.shatteredpixeldungeon.levels.traps.ChillingTrap;
-import com.shatteredpixel.shatteredpixeldungeon.levels.traps.FlockTrap;
-import com.shatteredpixel.shatteredpixeldungeon.levels.traps.OozeTrap;
-import com.shatteredpixel.shatteredpixeldungeon.levels.traps.SummoningTrap;
-import com.shatteredpixel.shatteredpixeldungeon.levels.traps.TeleportationTrap;
-import com.shatteredpixel.shatteredpixeldungeon.levels.traps.ToxicTrap;
-import com.shatteredpixel.shatteredpixeldungeon.levels.traps.WornTrap;
+import com.shatteredpixel.shatteredpixeldungeon.items.Item;
+import com.shatteredpixel.shatteredpixeldungeon.items.artifacts.DriedRose;
+import com.shatteredpixel.shatteredpixeldungeon.items.artifacts.EtherealChains;
+import com.shatteredpixel.shatteredpixeldungeon.items.potions.PotionOfMight;
+import com.shatteredpixel.shatteredpixeldungeon.items.rings.RingOfEvasion;
+import com.shatteredpixel.shatteredpixeldungeon.items.rings.RingOfForce;
+import com.shatteredpixel.shatteredpixeldungeon.items.rings.RingOfMight;
+import com.shatteredpixel.shatteredpixeldungeon.items.scrolls.ScrollOfMagicalInfusion;
+import com.shatteredpixel.shatteredpixeldungeon.items.scrolls.ScrollOfPsionicBlast;
+import com.shatteredpixel.shatteredpixeldungeon.items.wands.WandOfDisintegration;
+import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.Whip;
+import com.shatteredpixel.shatteredpixeldungeon.levels.traps.*;
 import com.shatteredpixel.shatteredpixeldungeon.messages.Messages;
 import com.shatteredpixel.shatteredpixeldungeon.scenes.GameScene;
 import com.watabou.noosa.Game;
@@ -46,207 +50,254 @@ import com.watabou.utils.Random;
 
 public class SewerLevel extends RegularLevel {
 
-	{
-		color1 = 0x48763c;
-		color2 = 0x59994a;
-	}
-	
-	@Override
-	public String tilesTex() {
-		return Assets.TILES_SEWERS;
-	}
-	
-	@Override
-	public String waterTex() {
-		return Assets.WATER_SEWERS;
-	}
-	
-	protected boolean[] water() {
-		return Patch.generate( this, feeling == Feeling.WATER ? 0.60f : 0.45f, 5 );
-	}
-	
-	protected boolean[] grass() {
-		return Patch.generate( this, feeling == Feeling.GRASS ? 0.60f : 0.40f, 4 );
-	}
+    {
+        color1 = 0x48763c;
+        color2 = 0x59994a;
+    }
 
-	@Override
-	protected Class<?>[] trapClasses() {
-		return Dungeon.depth == 1 ?
-				new Class<?>[]{WornTrap.class} :
-				new Class<?>[]{ChillingTrap.class, ToxicTrap.class, WornTrap.class,
-						AlarmTrap.class, OozeTrap.class,
-						FlockTrap.class, SummoningTrap.class, TeleportationTrap.class, };
-}
+    public static void addSewerVisuals(Level level, Group group) {
+        for (int i = 0; i < level.length(); i++) {
+            if (level.map[i] == Terrain.WALL_DECO) {
+                group.add(new Sink(i));
+            }
+        }
+    }
 
-	@Override
-	protected float[] trapChances() {
-		return Dungeon.depth == 1 ?
-				new float[]{1} :
-				new float[]{4, 4, 4,
-						2, 2,
-						1, 1, 1};
-	}
+    @Override
+    public String tilesTex() {
+        return Assets.TILES_SEWERS;
+    }
 
-	@Override
-	protected void decorate() {
-		
-		for (int i=0; i < width(); i++) {
-			if (map[i] == Terrain.WALL &&
-				map[i + width()] == Terrain.WATER &&
-				Random.Int( 4 ) == 0) {
-				
-				map[i] = Terrain.WALL_DECO;
-			}
-		}
-		
-		for (int i=width(); i < length() - width(); i++) {
-			if (map[i] == Terrain.WALL &&
-				map[i - width()] == Terrain.WALL &&
-				map[i + width()] == Terrain.WATER &&
-				Random.Int( 2 ) == 0) {
-				
-				map[i] = Terrain.WALL_DECO;
-			}
-		}
-		
-		for (int i=width() + 1; i < length() - width() - 1; i++) {
-			if (map[i] == Terrain.EMPTY) {
-				
-				int count =
-					(map[i + 1] == Terrain.WALL ? 1 : 0) +
-					(map[i - 1] == Terrain.WALL ? 1 : 0) +
-					(map[i + width()] == Terrain.WALL ? 1 : 0) +
-					(map[i - width()] == Terrain.WALL ? 1 : 0);
-				
-				if (Random.Int( 16 ) < count * count) {
-					map[i] = Terrain.EMPTY_DECO;
-				}
-			}
-		}
+    @Override
+    public String waterTex() {
+        return Assets.WATER_SEWERS;
+    }
 
-		//hides all doors in the entrance room on floor 2, teaches the player to search.
-		if (Dungeon.depth == 2)
-			for (Room r : roomEntrance.connected.keySet()){
-				Room.Door d = roomEntrance.connected.get(r);
-				if (d.type == Room.Door.Type.REGULAR)
-					map[d.x + d.y * width()] = Terrain.SECRET_DOOR;
-			}
-		
-		placeSign();
-	}
-	
-	@Override
-	protected void createItems() {
-		if (!Dungeon.limitedDrops.dewVial.dropped() && Random.Int( 4 - Dungeon.depth ) == 0) {
-			addItemToSpawn( new DewVial() );
-			Dungeon.limitedDrops.dewVial.drop();
-		}
+    protected boolean[] water() {
+        return Patch.generate(this, feeling == Feeling.WATER ? 0.60f : 0.45f, 5);
+    }
 
-		Ghost.Quest.spawn( this );
-		
-		super.createItems();
-	}
-	
-	@Override
-	public Group addVisuals() {
-		super.addVisuals();
-		addSewerVisuals(this, visuals);
-		return visuals;
-	}
-	
-	public static void addSewerVisuals( Level level, Group group ) {
-		for (int i=0; i < level.length(); i++) {
-			if (level.map[i] == Terrain.WALL_DECO) {
-				group.add( new Sink( i ) );
-			}
-		}
-	}
-	
-	@Override
-	public String tileName( int tile ) {
-		switch (tile) {
-			case Terrain.WATER:
-				return Messages.get(SewerLevel.class, "water_name");
-			default:
-				return super.tileName( tile );
-		}
-	}
-	
-	@Override
-	public String tileDesc(int tile) {
-		switch (tile) {
-			case Terrain.EMPTY_DECO:
-				return Messages.get(SewerLevel.class, "empty_deco_desc");
-			case Terrain.BOOKSHELF:
-				return Messages.get(SewerLevel.class, "bookshelf_desc");
-			default:
-				return super.tileDesc( tile );
-		}
-	}
-	
-	private static class Sink extends Emitter {
-		
-		private int pos;
-		private float rippleDelay = 0;
-		
-		private static final Emitter.Factory factory = new Factory() {
-			
-			@Override
-			public void emit( Emitter emitter, int index, float x, float y ) {
-				WaterParticle p = (WaterParticle)emitter.recycle( WaterParticle.class );
-				p.reset( x, y );
-			}
-		};
-		
-		public Sink( int pos ) {
-			super();
-			
-			this.pos = pos;
-			
-			PointF p = DungeonTilemap.tileCenterToWorld( pos );
-			pos( p.x - 2, p.y + 1, 4, 0 );
-			
-			pour( factory, 0.1f );
-		}
-		
-		@Override
-		public void update() {
-			if (visible = Dungeon.visible[pos]) {
-				
-				super.update();
-				
-				if ((rippleDelay -= Game.elapsed) <= 0) {
-					Ripple ripple = GameScene.ripple( pos + Dungeon.level.width() );
-					if (ripple != null) {
-						ripple.y -= DungeonTilemap.SIZE / 2;
-						rippleDelay = Random.Float(0.4f, 0.6f);
-					}
-				}
-			}
-		}
-	}
-	
-	public static final class WaterParticle extends PixelParticle {
-		
-		public WaterParticle() {
-			super();
-			
-			acc.y = 50;
-			am = 0.5f;
-			
-			color( ColorMath.random( 0xb6ccc2, 0x3b6653 ) );
-			size( 2 );
-		}
-		
-		public void reset( float x, float y ) {
-			revive();
-			
-			this.x = x;
-			this.y = y;
-			
-			speed.set( Random.Float( -2, +2 ), 0 );
-			
-			left = lifespan = 0.5f;
-		}
-	}
+    protected boolean[] grass() {
+        return Patch.generate(this, feeling == Feeling.GRASS ? 0.60f : 0.40f, 4);
+    }
+
+    @Override
+    protected Class<?>[] trapClasses() {
+        return Dungeon.depth == 1 ?
+                new Class<?>[]{WornTrap.class} :
+                new Class<?>[]{ChillingTrap.class, ToxicTrap.class, WornTrap.class,
+                        AlarmTrap.class, OozeTrap.class,
+                        FlockTrap.class, SummoningTrap.class, TeleportationTrap.class,};
+    }
+
+    @Override
+    protected float[] trapChances() {
+        return Dungeon.depth == 1 ?
+                new float[]{1} :
+                new float[]{4, 4, 4,
+                        2, 2,
+                        1, 1, 1};
+    }
+
+    @Override
+    protected void decorate() {
+
+        for (int i = 0; i < width(); i++) {
+            if (map[i] == Terrain.WALL &&
+                    map[i + width()] == Terrain.WATER &&
+                    Random.Int(4) == 0) {
+
+                map[i] = Terrain.WALL_DECO;
+            }
+        }
+
+        for (int i = width(); i < length() - width(); i++) {
+            if (map[i] == Terrain.WALL &&
+                    map[i - width()] == Terrain.WALL &&
+                    map[i + width()] == Terrain.WATER &&
+                    Random.Int(2) == 0) {
+
+                map[i] = Terrain.WALL_DECO;
+            }
+        }
+
+        for (int i = width() + 1; i < length() - width() - 1; i++) {
+            if (map[i] == Terrain.EMPTY) {
+
+                int count =
+                        (map[i + 1] == Terrain.WALL ? 1 : 0) +
+                                (map[i - 1] == Terrain.WALL ? 1 : 0) +
+                                (map[i + width()] == Terrain.WALL ? 1 : 0) +
+                                (map[i - width()] == Terrain.WALL ? 1 : 0);
+
+                if (Random.Int(16) < count * count) {
+                    map[i] = Terrain.EMPTY_DECO;
+                }
+            }
+        }
+
+        //hides all doors in the entrance room on floor 2, teaches the player to search.
+        if (Dungeon.depth == 2)
+            for (Room r : roomEntrance.connected.keySet()) {
+                Room.Door d = roomEntrance.connected.get(r);
+                if (d.type == Room.Door.Type.REGULAR)
+                    map[d.x + d.y * width()] = Terrain.SECRET_DOOR;
+            }
+
+        placeSign();
+    }
+
+    @Override
+    protected void createItems() {
+        if (Dungeon.depth == 1) {
+            int upg = Random.Int(1, 4);
+            // Be marginally nicer on the first floor
+            // TODO: Probably way too nice
+            Item item = null;
+            switch (Random.Int(0, 9)) {
+                case 0:
+                    item = new WandOfDisintegration();
+                    item.upgrade(upg);
+                    break;
+                case 1:
+                    item = new RingOfMight();
+                    item.upgrade(upg);
+                    break;
+                case 2:
+                    item = new RingOfEvasion();
+                    item.upgrade(upg);
+                    break;
+                case 3:
+                    item = new RingOfForce();
+                    item.upgrade(upg);
+                    break;
+                case 4:
+                    item = new Whip();
+                    item.upgrade(upg);
+                    break;
+                case 5:
+                    item = new EtherealChains();
+                    item.upgrade(upg);
+                    break;
+                case 6:
+                    item = new DriedRose();
+                    item.upgrade(upg);
+                    break;
+                case 7:
+                    item = new PotionOfMight();
+                    break;
+                case 8:
+                    item = new ScrollOfPsionicBlast();
+                    item = item.quantity(4);
+                    break;
+                case 9:
+                    item = new ScrollOfMagicalInfusion();
+                    item = item.quantity(2);
+                    break;
+            }
+            addItemToSpawn(item);
+        }
+        if (!Dungeon.limitedDrops.dewVial.dropped() && Random.Int(4 - Dungeon.depth) == 0) {
+            addItemToSpawn(new DewVial());
+            Dungeon.limitedDrops.dewVial.drop();
+        }
+
+        Ghost.Quest.spawn(this);
+
+        super.createItems();
+    }
+
+    @Override
+    public Group addVisuals() {
+        super.addVisuals();
+        addSewerVisuals(this, visuals);
+        return visuals;
+    }
+
+    @Override
+    public String tileName(int tile) {
+        switch (tile) {
+            case Terrain.WATER:
+                return Messages.get(SewerLevel.class, "water_name");
+            default:
+                return super.tileName(tile);
+        }
+    }
+
+    @Override
+    public String tileDesc(int tile) {
+        switch (tile) {
+            case Terrain.EMPTY_DECO:
+                return Messages.get(SewerLevel.class, "empty_deco_desc");
+            case Terrain.BOOKSHELF:
+                return Messages.get(SewerLevel.class, "bookshelf_desc");
+            default:
+                return super.tileDesc(tile);
+        }
+    }
+
+    private static class Sink extends Emitter {
+
+        private static final Emitter.Factory factory = new Factory() {
+
+            @Override
+            public void emit(Emitter emitter, int index, float x, float y) {
+                WaterParticle p = (WaterParticle) emitter.recycle(WaterParticle.class);
+                p.reset(x, y);
+            }
+        };
+        private int pos;
+        private float rippleDelay = 0;
+
+        public Sink(int pos) {
+            super();
+
+            this.pos = pos;
+
+            PointF p = DungeonTilemap.tileCenterToWorld(pos);
+            pos(p.x - 2, p.y + 1, 4, 0);
+
+            pour(factory, 0.1f);
+        }
+
+        @Override
+        public void update() {
+            if (visible = Dungeon.visible[pos]) {
+
+                super.update();
+
+                if ((rippleDelay -= Game.elapsed) <= 0) {
+                    Ripple ripple = GameScene.ripple(pos + Dungeon.level.width());
+                    if (ripple != null) {
+                        ripple.y -= DungeonTilemap.SIZE / 2;
+                        rippleDelay = Random.Float(0.4f, 0.6f);
+                    }
+                }
+            }
+        }
+    }
+
+    public static final class WaterParticle extends PixelParticle {
+
+        public WaterParticle() {
+            super();
+
+            acc.y = 50;
+            am = 0.5f;
+
+            color(ColorMath.random(0xb6ccc2, 0x3b6653));
+            size(2);
+        }
+
+        public void reset(float x, float y) {
+            revive();
+
+            this.x = x;
+            this.y = y;
+
+            speed.set(Random.Float(-2, +2), 0);
+
+            left = lifespan = 0.5f;
+        }
+    }
 }
