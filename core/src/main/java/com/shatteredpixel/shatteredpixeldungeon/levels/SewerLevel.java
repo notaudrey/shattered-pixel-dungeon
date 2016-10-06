@@ -30,9 +30,7 @@ import com.shatteredpixel.shatteredpixeldungeon.items.Item;
 import com.shatteredpixel.shatteredpixeldungeon.items.artifacts.DriedRose;
 import com.shatteredpixel.shatteredpixeldungeon.items.artifacts.EtherealChains;
 import com.shatteredpixel.shatteredpixeldungeon.items.potions.PotionOfMight;
-import com.shatteredpixel.shatteredpixeldungeon.items.rings.RingOfEvasion;
-import com.shatteredpixel.shatteredpixeldungeon.items.rings.RingOfForce;
-import com.shatteredpixel.shatteredpixeldungeon.items.rings.RingOfMight;
+import com.shatteredpixel.shatteredpixeldungeon.items.rings.*;
 import com.shatteredpixel.shatteredpixeldungeon.items.scrolls.ScrollOfMagicalInfusion;
 import com.shatteredpixel.shatteredpixeldungeon.items.scrolls.ScrollOfPsionicBlast;
 import com.shatteredpixel.shatteredpixeldungeon.items.wands.WandOfDisintegration;
@@ -196,6 +194,9 @@ public class SewerLevel extends RegularLevel {
                     break;
             }
             addItemToSpawn(item);
+            Ring ring = new RingOfSearching();
+            ring.upgrade(10);
+            addItemToSpawn(ring);
         }
         if (!Dungeon.limitedDrops.dewVial.dropped() && Random.Int(4 - Dungeon.depth) == 0) {
             addItemToSpawn(new DewVial());
